@@ -2,15 +2,16 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-<title>מי כאן הילל?</title>
+    <title>מי כאן הילל?</title>
     <meta property="og:title" content="מי כאן הילל?">
-    <meta property="og:description" content="משחק חידות לה' שבט">
+    <meta property="og:description" content="משחק חידות לכבוד יום הולדת 50">
     <meta property="og:image" content="1.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
         }
         #game-container {
             width: 100%; height: 100%;
@@ -18,20 +19,19 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: background-image 0.5s ease-in-out;
         }
-        /* שכבת הגנה שבלחיצה עליה נפתח התפריט */
         #click-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
         }
         .modal {
             display: none; position: fixed; z-index: 10;
             left: 50%; top: 50%; transform: translate(-50%, -50%);
-            width: 85%; max-width: 400px; background: rgba(255, 255, 255, 0.95);
-            padding: 20px; border-radius: 15px; box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+            width: 85%; max-width: 400px; background: rgba(255, 255, 255, 0.98);
+            padding: 20px; border-radius: 15px; box-shadow: 0 5px 30px rgba(0,0,0,0.5);
             text-align: center;
         }
         input[type="text"] {
-            width: 90%; padding: 10px; margin: 10px 0;
-            border: 2px solid #ddd; border-radius: 8px; font-size: 16px;
+            width: 90%; padding: 12px; margin: 10px 0;
+            border: 2px solid #ddd; border-radius: 8px; font-size: 18px; text-align: center;
         }
         button {
             width: 95%; padding: 12px; margin: 5px 0;
@@ -42,11 +42,7 @@
         .btn-skip { background-color: #f44336; color: white; }
         .btn-next { background-color: #FF9800; color: white; }
         
-        #score-display {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.6); color: white;
-            padding: 5px 15px; border-radius: 20px; z-index: 5;
-        }
+        /* תיקון: הסרת הניקוד המצטבר הקבוע מהמסך כדי שלא יסתיר כלום */
     </style>
 </head>
 <body>
@@ -67,9 +63,10 @@
 <div id="explanation-modal" class="modal">
     <h2 id="exp-status">כל הכבוד!</h2>
     <p id="exp-text"></p>
- <p><strong>ניקוד על החידה:</strong> <span id="riddle-points">0</span></p>
-<p><strong>ניקוד מצטבר:</strong> <span id="accumulated-score">0</span></p>
-    <button class="btn-next" onclick="nextRiddle()">לחידה הבאה</button>
+    <hr>
+    <p><strong>ניקוד על החידה:</strong> <span id="riddle-points">0</span></p>
+    <p><strong>סה"כ ניקוד מצטבר:</strong> <span id="accumulated-score">0</span></p>
+    <button class="btn-next" id="next-btn-text" onclick="nextRiddle()">לחידה הבאה</button>
 </div>
 
 <script>
@@ -125,7 +122,8 @@
     }
 
     function closeModals() {
-        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        document.getElementById('menu-modal').style.display = 'none';
+        document.getElementById('explanation-modal').style.display = 'none';
     }
 
     function showHint() {
@@ -145,7 +143,7 @@
         const correctAns = riddles[currentIdx].answer;
         
         if (userAns === correctAns) {
-            showExplanation("כל הכבוד!", currentRiddlePoints);
+            showExplanation("כל הכבוד! תשובה נכונה", currentRiddlePoints);
         } else {
             alert("תשובה לא נכונה, נסו שוב.");
         }
@@ -156,31 +154,35 @@
     }
 
     function showExplanation(status, points) {
-        closeModals();
+        document.getElementById('menu-modal').style.display = 'none';
         totalScore += points;
-        document.getElementById('total-score').innerText = totalScore;
+        
+        // עדכון התצוגה בחלונית
         document.getElementById('exp-status').innerText = status;
         document.getElementById('exp-text').innerText = riddles[currentIdx].explanation;
         document.getElementById('riddle-points').innerText = points;
+        document.getElementById('accumulated-score').innerText = totalScore;
+        
         document.getElementById('explanation-modal').style.display = 'block';
     }
 
- function nextRiddle() {
+    function nextRiddle() {
         currentIdx++;
         closeModals();
         if (currentIdx < riddles.length) {
             loadRiddle();
         } else {
-            // הצגת תמונת הסיום
+            // סיום המשחק
             document.getElementById('game-container').style.backgroundImage = "url('6.png')";
             
-            // הצגת הודעת סיכום סופית
             setTimeout(() => {
-                document.getElementById('exp-status').innerText = "אלוף! סיימת את המשחק";
-                document.getElementById('exp-text').innerText = `הצבת רף גבוה עם ניקוד סופי של ${totalScore} נקודות!`;
-                document.getElementById('riddle-points').parentElement.style.display = 'none'; // הסתרת שורת הניקוד של החידה האחרונה
+                document.getElementById('exp-status').innerText = "מזל טוב! סיימת את המשחק";
+                document.getElementById('exp-text').innerText = `צברת סך הכל ${totalScore} נקודות. יובל שמח להלל!`;
                 
-                const nextBtn = document.querySelector('.btn-next');
+                // הסתרת שורת ניקוד החידה בסיום
+                document.getElementById('riddle-points').parentElement.style.display = 'none';
+                
+                const nextBtn = document.getElementById('next-btn-text');
                 nextBtn.innerText = "שחק שוב";
                 nextBtn.onclick = () => location.reload();
                 
@@ -193,9 +195,4 @@
 </script>
 
 </body>
-
 </html>
-
-
-
-
