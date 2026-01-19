@@ -41,8 +41,6 @@
         .btn-hint { background-color: #2196F3; color: white; }
         .btn-skip { background-color: #f44336; color: white; }
         .btn-next { background-color: #FF9800; color: white; }
-        
-        /* תיקון: הסרת הניקוד המצטבר הקבוע מהמסך כדי שלא יסתיר כלום */
     </style>
 </head>
 <body>
@@ -63,9 +61,9 @@
 <div id="explanation-modal" class="modal">
     <h2 id="exp-status">כל הכבוד!</h2>
     <p id="exp-text"></p>
-    <hr>
-    <p><strong>ניקוד על החידה:</strong> <span id="riddle-points">0</span></p>
-    <p><strong>סה"כ ניקוד מצטבר:</strong> <span id="accumulated-score">0</span></p>
+    <hr id="score-hr">
+    <p id="p-riddle-score"><strong>ניקוד על החידה:</strong> <span id="riddle-points">0</span></p>
+    <p id="p-total-score"><strong>סה"כ ניקוד מצטבר:</strong> <span id="accumulated-score">0</span></p>
     <button class="btn-next" id="next-btn-text" onclick="nextRiddle()">לחידה הבאה</button>
 </div>
 
@@ -141,7 +139,6 @@
     function checkAnswer() {
         const userAns = document.getElementById('answer-input').value.trim();
         const correctAns = riddles[currentIdx].answer;
-        
         if (userAns === correctAns) {
             showExplanation("כל הכבוד! תשובה נכונה", currentRiddlePoints);
         } else {
@@ -156,13 +153,10 @@
     function showExplanation(status, points) {
         document.getElementById('menu-modal').style.display = 'none';
         totalScore += points;
-        
-        // עדכון התצוגה בחלונית
         document.getElementById('exp-status').innerText = status;
         document.getElementById('exp-text').innerText = riddles[currentIdx].explanation;
         document.getElementById('riddle-points').innerText = points;
         document.getElementById('accumulated-score').innerText = totalScore;
-        
         document.getElementById('explanation-modal').style.display = 'block';
     }
 
@@ -172,23 +166,25 @@
         if (currentIdx < riddles.length) {
             loadRiddle();
         } else {
-            // סיום המשחק
+            // שלב הסיום: החלפת תמונה ל-6 ללא הקפצת חלונית
             document.getElementById('game-container').style.backgroundImage = "url('6.png')";
-            
-            setTimeout(() => {
-                document.getElementById('exp-status').innerText = "מזל טוב! סיימת את המשחק";
-                document.getElementById('exp-text').innerText = `צברת סך הכל ${totalScore} נקודות. יובל שמח להלל!`;
-                
-                // הסתרת שורת ניקוד החידה בסיום
-                document.getElementById('riddle-points').parentElement.style.display = 'none';
-                
-                const nextBtn = document.getElementById('next-btn-text');
-                nextBtn.innerText = "שחק שוב";
-                nextBtn.onclick = () => location.reload();
-                
-                document.getElementById('explanation-modal').style.display = 'block';
-            }, 500);
+            // שינוי הלחיצה על המסך שתציג את הניקוד הסופי
+            document.getElementById('click-overlay').onclick = showFinalScore;
         }
+    }
+
+    function showFinalScore() {
+        document.getElementById('exp-status').innerText = "מזל טוב! סיימת את המשחק";
+        document.getElementById('exp-text').innerText = `צברת סך הכל ${totalScore} נקודות. יובל שמח להלל!`;
+        
+        // הסתרת שורות ניקוד ביניים
+        document.getElementById('p-riddle-score').style.display = 'none';
+        
+        const nextBtn = document.getElementById('next-btn-text');
+        nextBtn.innerText = "שחק שוב";
+        nextBtn.onclick = () => location.reload();
+        
+        document.getElementById('explanation-modal').style.display = 'block';
     }
 
     window.onload = initGame;
