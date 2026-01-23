@@ -16,11 +16,19 @@
         #game-container {
             width: 100%; height: 100%;
             background-size: cover; background-position: center;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
             transition: background-image 0.5s ease-in-out;
         }
+        /* שכבת הלחיצה - כרגע על כל המסך, נצמצם אותה לשליש התחתון רק בעמוד הפתיחה */
         #click-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        }
+        /* כפתור התחל ייחודי לעמוד הפתיחה */
+        #start-btn {
+            display: none; position: relative; z-index: 2; margin-bottom: 50px;
+            padding: 15px 40px; font-size: 24px; background-color: #4CAF50; color: white;
+            border: none; border-radius: 50px; cursor: pointer; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         .modal {
             display: none; position: fixed; z-index: 10;
@@ -46,6 +54,7 @@
 <body>
 
 <div id="game-container">
+    <button id="start-btn" onclick="startFirstRiddle()">התחל משחק</button>
     <div id="click-overlay" onclick="openMenu()"></div>
 </div>
 
@@ -74,34 +83,42 @@
             hints: ['האותיות "קח את ציבור" הן אותיות התשובה', 'שם מקום (אנחנו בעשור הראשון)'],
             explanation: "בארות יצחק = אותיות 'קח את ציבור'"
         },
-        {
-            id: 2, image: '2.png', answer: 'עתניאל',
-            hints: ['157 זה לא מספר אלא אותיות', 'לאן הגיע הילל בגיל ח"י?'],
-            explanation: "עתניאל (בן קנז בגימטריה = 157)"
-        },
-        {
-            id: 3, image: '3.png', answer: 'אוריה',
-            hints: ['אריה = לביא', 'כל מילה רומזת לאחד הילדים. מי חסר?'],
-            explanation: "אריה=לביא, נווה=מקדש=הראל, תרם=נדב, שבח=תהילה."
-        },
-        {
-            id: 4, image: '4.png', answer: 'אמדוקס',
-            hints: ['מה קרה ללוגו?', 'מקום עבודה.'],
-            explanation: "כל אות זזה מקום אחד קדימה)."
-        },
-        {
-            id: 5, image: '5.png', answer: 'הדף השבועי',
-            hints: ['פרויקט שעובד בשבת.', 'זה לא הדף היומי.'],
-            explanation: "הדף השבועי נמשך כחמישים שנה, וכרגע לומדים מסכת שקלים."
-        }
+        // ... שאר החידות שלך נשארות כרגיל
+        { id: 2, image: '2.png', answer: 'עתניאל', hints: ['157 זה לא מספר אלא אותיות', 'לאן הגיע הילל בגיל ח"י?'], explanation: "עתניאל (בן קנז בגימטריה = 157)" },
+        { id: 3, image: '3.png', answer: 'אוריה', hints: ['אריה = לביא', 'כל מילה רומזת לאחד הילדים. מי חסר?'], explanation: "אריה=לביא, נווה=מקדש=הראל, תרם=נדב, שבח=תהילה." },
+        { id: 4, image: '4.png', answer: 'אמדוקס', hints: ['מה קרה ללוגו?', 'מקום עבודה.'], explanation: "כל אות זזה מקום אחד קדימה." },
+        { id: 5, image: '5.png', answer: 'הדף השבועי', hints: ['פרויקט שעובד בשבת.', 'זה לא הדף היומי.'], explanation: "הדף השבועי נמשך כחמישים שנה, וכרגע לומדים מסכת שקלים." }
     ];
 
-    let currentIdx = 0;
+    let currentIdx = -1; // מתחילים במינוס 1 כדי להציג את עמוד הפתיחה
     let totalScore = 0;
     let currentRiddlePoints = 10;
     let hintsUsed = 0;
 
     function initGame() {
+        showLandingPage();
+    }
+
+    // פונקציה חדשה לעמוד הפתיחה
+    function showLandingPage() {
+        document.getElementById('game-container').style.backgroundImage = "url('0.png')";
+        document.getElementById('start-btn').style.display = 'block';
+        
+        // הגבלת אזור הלחיצה רק לשליש התחתון בעמוד הפתיחה
+        const overlay = document.getElementById('click-overlay');
+        overlay.style.height = '33%'; 
+        overlay.onclick = null; // מנטרל את פתיחת התפריט בעמוד הפתיחה
+    }
+
+    function startFirstRiddle() {
+        document.getElementById('start-btn').style.display = 'none';
+        
+        // החזרת אזור הלחיצה לכל המסך עבור המשחק
+        const overlay = document.getElementById('click-overlay');
+        overlay.style.height = '100%';
+        overlay.onclick = openMenu;
+        
+        currentIdx = 0;
         loadRiddle();
     }
 
@@ -166,9 +183,7 @@
         if (currentIdx < riddles.length) {
             loadRiddle();
         } else {
-            // שלב הסיום: החלפת תמונה ל-6 ללא הקפצת חלונית
             document.getElementById('game-container').style.backgroundImage = "url('6.png')";
-            // שינוי הלחיצה על המסך שתציג את הניקוד הסופי
             document.getElementById('click-overlay').onclick = showFinalScore;
         }
     }
@@ -176,14 +191,10 @@
     function showFinalScore() {
         document.getElementById('exp-status').innerText = "מזל טוב! סיימת את המשחק";
         document.getElementById('exp-text').innerText = `צברת סך הכל ${totalScore} נקודות. יובל שמח להלל!`;
-        
-        // הסתרת שורות ניקוד ביניים
         document.getElementById('p-riddle-score').style.display = 'none';
-        
         const nextBtn = document.getElementById('next-btn-text');
         nextBtn.innerText = "שחק שוב";
         nextBtn.onclick = () => location.reload();
-        
         document.getElementById('explanation-modal').style.display = 'block';
     }
 
@@ -192,5 +203,3 @@
 
 </body>
 </html>
-
-
